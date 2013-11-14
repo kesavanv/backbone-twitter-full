@@ -16,7 +16,8 @@
 
 	//Collection
 	var TweetsList = Backbone.Collection.extend({
-		model: Tweet
+		model: Tweet,
+		url: '/tweets'
 	});
 
 	var tweets = new TweetsList();
@@ -73,8 +74,14 @@
 		el: '#tweets-container',
 
         initialize: function () {
+        	var oSelf = this;
             this.model.on('add', this.render, this);
             this.model.on('remove', this.render, this);
+
+            tweets.fetch({
+            	success: function () {oSelf.render();},
+            	error: function () {console.log('Cannot retrieve models from server');}
+            });
         },
 
 		render: function () {
@@ -95,6 +102,10 @@
 			});
 			tweets.add(tweet);
 			console.log(tweets.toJSON());
+			tweet.save({}, {
+				success: function () {console.log('Successfully saved Tweets');},
+				error: function () {console.log('Failure in saving Tweets');}
+			});
 
 			return false;
 		});
