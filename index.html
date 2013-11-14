@@ -3,25 +3,34 @@
 	<head>
 		<meta charset="utf-8" />
 		<title>Backbone Twitter</title>
+		<style>
+			.container{margin: 20px auto; width: 500px;}
+			.tweets-container{margin-top: 25px;}
+			.tweet{border-bottom: 1px solid #ddd; padding: 5px 0;}
+			.author{font-weight: bold;}
+			.author, .status{ padding-right: 20px;}
+		</style>
 	</head>
 	<body>
-		<h1>Backbone for Twitter</h1>
-		<form id="new-tweet">
-			<label for="author-name">Author: </label>
-			<input type="text" id="author-name" />
-			<label for="status-message">Status: </label>
-			<input type="text" id="status-message" />
-
-			<button>Post</button>
-		</form>
+		<div class="container">
+			<h1>Backbone for Twitter</h1>
+			<form id="new-tweet">
+				<label for="author-name">Author: </label> <input type="text" id="author-name" />
+				<label for="status-update">Status: </label> <input type="text" id="status-update" />
+				<button>Post</button>
+			</form>
+			
+			<div id="tweets-container" class="tweets-container"></div>
+		</div>
 		
-		<div id="tweets-container"></div>
 
 		<script src="underscore.js"></script>
 		<script src="jquery.js"></script>
 		<script src="backbone.js"></script>
 		<script>
 			(function ($) {
+
+				//Model
 				var Tweet = Backbone.Model.extend({
 					defaults: function () {
 						return {
@@ -31,17 +40,52 @@
 					}
 				});
 
+				//Collection
 				var TweetsList = Backbone.Collection.extend({
 					model: Tweet
 				});
 
 				var tweets = new TweetsList();
 
+				//View
 				var TweetView = Backbone.View.extend({
 					model: new Tweet(),
 					tagName: 'div',
+					className: 'tweet',
+					events: {
+						'click .edit': 'edit',
+						'click .delete': 'delete',
+						'blur .status': 'close',
+						'keypress .status': 'onEnterUpdate'
+					},
+
 					initialize: function () {
 						this.template = _.template($('#tweet-template').html());
+					},
+
+					edit: function (ev) {
+						ev.preventDefault();
+						this.$('.status').attr('contenteditable', true).focus();
+					},
+
+					delete: function (ev) {
+						ev.preventDefault();
+						tweets.remove(this.model);
+					},
+
+					onEnterUpdate: function (ev) {
+						if (ev.keyCode === 13) {
+							this.close();
+							var oSelf = this;
+							//this delay is needed for the browser to update the UI before bluring.
+							_.delay(function () {oSelf.$('.status').blur()}, 100);
+						}
+					},
+
+					close: function (ev) {
+						var status = this.$('.status').text();
+						this.model.set('status', status);
+						this.$('.status').removeAttr('contenteditable');
 					},
 
 					render: function () {
@@ -55,7 +99,8 @@
 					el: '#tweets-container',
 
                     initialize: function () {
-                        this.model.on('add', this.render, this)
+                        this.model.on('add', this.render, this);
+                        this.model.on('remove', this.render, this);
                     },
 
 					render: function () {
@@ -72,7 +117,7 @@
 					$('#new-tweet').submit(function (ev) {
 						var tweet = new Tweet({
 							author: $('#author-name').val(),
-							status: $('#status-message').val()
+							status: $('#status-update').val()
 						});
 						tweets.add(tweet);
 						console.log(tweets.toJSON());
@@ -88,7 +133,10 @@
 		<!-- Templates -->
 		<script type="text/template" id="tweet-template">
 			<span class="author"><%= author %>: </span>
-			<span class="status-update"><%= status %></span>
+			<span class="status"><%= status %></span>
+			<span class>
+				<a href="#" class="edit"> Edit </a> | <a href="#" class="delete"> Delete </a>
+			</span>
 		</script>
 	</body>
 </html>
