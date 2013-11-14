@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Backbone Twitter</title>
+		<style>
+			.container{margin: 20px auto; width: 500px;}
+			.tweets-container{margin-top: 25px;}
+			.tweet{border-bottom: 1px solid #ddd; padding: 5px 0;}
+			.author{font-weight: bold;}
+			.author, .status{ padding-right: 20px;}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<h1>Backbone for Twitter</h1>
+			<form id="new-tweet">
+				<label for="author-name">Author: </label> <input type="text" id="author-name" />
+				<label for="status-update">Status: </label> <input type="text" id="status-update" />
+				<button>Post</button>
+			</form>
+			
+			<div id="tweets-container" class="tweets-container"></div>
+		</div>
+		
+
+		<script src="javascripts/vendor/underscore.js"></script>
+		<script src="javascripts/vendor/jquery.js"></script>
+		<script src="javascripts/vendor/backbone.js"></script>
+		<script src="javascripts/main.js"></script>
+
+		<!-- Templates -->
+		<script type="text/template" id="tweet-template">
+			<span class="author">{{author}}: </span>
+			<span class="status">{{status}}</span>
+			<span class="action-links">
+				<a href="#" class="edit"> Edit </a> | <a href="#" class="delete"> Delete </a>
+			</span>
+		</script>
+	</body>
+</html>
