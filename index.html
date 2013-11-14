@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Backbone Twitter</title>
+	</head>
+	<body>
+		<h1>Backbone for Twitter</h1>
+		<form id="new-tweet">
+			<label for="author-name">Author: </label>
+			<input type="text" id="author-name" />
+			<label for="status-message">Status: </label>
+			<input type="text" id="status-message" />
+
+			<button>Post</button>
+		</form>
+		
+		<div id="tweets-container"></div>
+
+		<script src="underscore.js"></script>
+		<script src="jquery.js"></script>
+		<script src="backbone.js"></script>
+		<script>
+			(function ($) {
+				var Tweet = Backbone.Model.extend({
+					defaults: function () {
+						return {
+							author: '',
+							status: ''
+						};
+					}
+				});
+
+				var TweetsList = Backbone.Collection.extend({
+					model: Tweet
+				});
+
+				var tweets = new TweetsList();
+
+				var TweetView = Backbone.View.extend({
+					model: new Tweet(),
+					tagName: 'div',
+					initialize: function () {
+						this.template = _.template($('#tweet-template').html());
+					},
+
+					render: function () {
+						this.$el.html(this.template(this.model.toJSON()));
+						return this;
+					}
+				});
+
+				var TweetsView = Backbone.View.extend({
+					model: tweets,
+					el: '#tweets-container',
+
+                    initialize: function () {
+                        this.model.on('add', this.render, this)
+                    },
+
+					render: function () {
+                        var oSelf = this;
+                        oSelf.$el.empty();
+                        _.each(this.model.toArray(), function (tweet, i) {
+                            oSelf.$el.append((new TweetView({model: tweet})).render().$el);
+                        });
+						return this;
+					}
+				});
+
+				$(document).ready(function () {
+					$('#new-tweet').submit(function (ev) {
+						var tweet = new Tweet({
+							author: $('#author-name').val(),
+							status: $('#status-message').val()
+						});
+						tweets.add(tweet);
+						console.log(tweets.toJSON());
+
+						return false;
+					});
+
+					var appView = new TweetsView();
+				});
+			})(jQuery);
+		</script>
+
+		<!-- Templates -->
+		<script type="text/template" id="tweet-template">
+			<span class="author"><%= author %>: </span>
+			<span class="status-update"><%= status %></span>
+		</script>
+	</body>
+</html>
